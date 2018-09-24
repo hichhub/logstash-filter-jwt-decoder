@@ -1,6 +1,6 @@
 # Logstash Plugin
 
-[![Travis Build Status](https://travis-ci.org/logstash-plugins/logstash-filter-example.svg)](https://travis-ci.org/logstash-plugins/logstash-filter-example)
+[![Travis Build Status](https://travis-ci.org/iqueiroz/logstash-filter-jwt-decoder.svg)](https://travis-ci.org/iqueiroz/logstash-filter-jwt-decoder)
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
