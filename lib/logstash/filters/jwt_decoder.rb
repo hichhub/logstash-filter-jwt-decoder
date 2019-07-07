@@ -21,7 +21,7 @@ class LogStash::Filters::JwtDecoder < LogStash::Filters::Base
   config :output_field, :validate => :string, :default => "jwt_decoded"
 
   # fields to be extracted
-  config :extract, :validate => :hash, :default => { "userId" => "$..[0].sub"}
+  config :extract, :validate => :hash, :default => { "webID" => "$..[0].webID"}
 
   public
   def register
@@ -37,16 +37,18 @@ class LogStash::Filters::JwtDecoder < LogStash::Filters::Base
         if match = raw_message.match(@token_pattern)
           token = match.captures[@match_group_index]
           decoded_token = JWT.decode token, nil, false
-
           result = Hash.new
+          aid = decoded_token[0]['aid']
+          auu = decoded_token[0]['auu']
+          webID = decoded_token[0]['webID']
+          patron_uuid = decoded_token[0]['patron_uuid']
+          pn = decoded_token[0]['pn']
 
-          @extract.each do |key, value|
-            jsonPath = JsonPath.new(value)
-            result[key] = jsonPath.first(decoded_token)
+          if (pn)
+            event.set("user_mobile_number", result)
           end
-
-          event.set(@output_field, result)
-
+          event.set("user_uuid", aid || auu || webID || patron_uuid)
+          event.set("uuid_source", (auu || webID)? 'address' : 'patron')
           filter_matched(event)
         end
       end
