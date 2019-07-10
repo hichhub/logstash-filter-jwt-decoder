@@ -36,20 +36,25 @@ class LogStash::Filters::JwtDecoder < LogStash::Filters::Base
       if(raw_message)
         if match = raw_message.match(@token_pattern)
           token = match.captures[@match_group_index]
-          decoded_token = JWT.decode token, nil, false
-          result = Hash.new
-          aid = decoded_token[0]['aid']
-          auu = decoded_token[0]['auu']
-          webID = decoded_token[0]['webID']
-          patron_uuid = decoded_token[0]['patron_uuid']
-          pn = decoded_token[0]['pn']
-
-          if (pn)
-            event.set("user_mobile_number", result)
+          if (token)
+            begin
+              decoded_token = JWT.decode token, nil, false
+              result = Hash.new
+              aid = decoded_token[0]['aid']
+              auu = decoded_token[0]['auu']
+              webID = decoded_token[0]['webID']
+              patron_uuid = decoded_token[0]['patron_uuid']
+              pn = decoded_token[0]['pn']
+              if (pn)
+                event.set("user_mobile_number", pn)
+              end
+              event.set("user_uuid", aid || auu || webID || patron_uuid)
+              event.set("uuid_source", (auu || webID)? 'address' : 'patron')
+            rescue
+              event.set("user_uuid", "invalid_jwt")
+            end
+            filter_matched(event)
           end
-          event.set("user_uuid", aid || auu || webID || patron_uuid)
-          event.set("uuid_source", (auu || webID)? 'address' : 'patron')
-          filter_matched(event)
         end
       end
   end # def filter
